@@ -4,7 +4,7 @@ use warnings;
 
 package OCS::Client;
 {
-  $OCS::Client::VERSION = '0.003';
+  $OCS::Client::VERSION = '0.004';
 }
 # ABSTRACT: A simple interface to OCS's SOAP API
 
@@ -29,7 +29,7 @@ sub new {
     $userinfo .= $pass if $pass;
     $proxy->userinfo($userinfo) if $userinfo;
 
-    $proxy->path("/ocsinterface\n");
+    $proxy->path("/ocsinterface");
 
     my $self = { soap => SOAP::Lite->uri($uri->as_string)->proxy($proxy->as_string, @args) };
 
@@ -42,8 +42,8 @@ sub get_computers_V1 {
     my %request = (
 	engine     => 'FIRST',
 	asking_for => 'INVENTORY',
-	checksum   => '131071',
-	wanted     => '000003',
+	checksum   => 0x01FFFF,
+	wanted     => 0x000003,
 	offset     => 0,
 	@_,
     );
@@ -160,6 +160,32 @@ sub prune {
     return $computer;
 }
 
+
+use constant {
+    # CHECKSUM constants
+    'HARDWARE'            => 0x00001,
+    'BIOS'                => 0x00002,
+    'MEMORY_SLOTS'        => 0x00004,
+    'SYSTEM_SLOTS'        => 0x00008,
+    'REGISTRY'            => 0x00010,
+    'SYSTEM_CONTROLLERS'  => 0x00020,
+    'MONITORS'            => 0x00040,
+    'SYSTEM_PORTS'        => 0x00080,
+    'STORAGE_PERIPHERALS' => 0x00100,
+    'LOGICAL_DRIVES'      => 0x00200,
+    'INPUT_DEVICES'       => 0x00400,
+    'MODEMS'              => 0x00800,
+    'NETWORK_ADAPTERS'    => 0x01000,
+    'PRINTERS'            => 0x02000,
+    'SOUND_ADAPTERS'      => 0x04000,
+    'VIDEO_ADAPTERS'      => 0x08000,
+    'SOFTWARE'            => 0x10000,
+
+    # WANTED constants
+    'ACOUNTINFO'          => 0x00001,
+    'DICO_SOFT'           => 0x00002,
+};
+
 1; # End of OCS::Client
 
 __END__
@@ -171,7 +197,7 @@ OCS::Client - A simple interface to OCS's SOAP API
 
 =head1 VERSION
 
-version 0.003
+version 0.004
 
 =head1 SYNOPSIS
 
@@ -179,7 +205,10 @@ version 0.003
 
   my $ocs = OCS::Client->new('http://ocs.example.com', 'user', 'passwd');
 
-  my @computers = $ocs->get_computers_V1(id => 123456);
+  my @computers = $ocs->get_computers_V1(
+      id       => 123456,
+      checksum => OCS::Client::HARDWARE | OCS::Client::SOFTWARE,
+  );
 
   my $next_computer = $ocs->computer_iterator(asking_for => 'META');
   while (my $meta = $next_computer->()) {
@@ -198,9 +227,7 @@ L<http://wiki.ocsinventory-ng.org/index.php/Developers:Web_services>.
 
 =head2 METHODS
 
-=head1 METHODS
-
-=head2 B<new> OCSURL, USER, PASSWD [, <SOAP::Lite arguments>]
+=head3 B<new> OCSURL, USER, PASSWD [, <SOAP::Lite arguments>]
 
 The OCS::Client constructor requires three arguments. OCSURL is OCS's
 base URL from which will be constructed it's SOAP URL. USER and PASSWD
@@ -208,7 +235,7 @@ are the credentials that will be used to authenticate into OCS. Any
 other arguments will be passed to the L<SOAP::Lite> object that will
 be created to talk to OCS.
 
-=head2 B<get_computers_V1> REQUEST-MAP
+=head3 B<get_computers_V1> REQUEST-MAP
 
 This method allows for querying inventoried computers.
 
@@ -219,8 +246,8 @@ to the following default list:
 
     engine     => 'FIRST',
     asking_for => 'INVENTORY',
-    checksum   => '131071',
-    wanted     => '000003',
+    checksum   => 0x01FFFF,
+    wanted     => 0x000003,
     offset     => 0,
 
 The complete list is used to initialize a hash from which the XML
@@ -232,7 +259,7 @@ as a data structure that is converted from its XML original
 representation into a Perl data structure by the XML::Simple::XMLin
 function.
 
-=head2 B<computer_iterator> REQUEST-LIST
+=head3 B<computer_iterator> REQUEST-LIST
 
 This method returns a closure that you can use to fetch the computers
 one by one until there is no more. It's usefull because the server
@@ -240,7 +267,7 @@ usually has a limit to the maximum number of computers that
 get_computers_V1 can return at once. See an example of its usage in
 the SYNOPSIS above.
 
-=head2 B<prune> COMPUTER
+=head3 B<prune> COMPUTER
 
 This class method gets a COMPUTER description, as returned by the
 get_computer_V1 method, and simplifies it by deleting and converting
@@ -257,8 +284,63 @@ uninportant to track.
 Note that it tries to convert the custom field names by using the
 OCS::Client::fields hash. This hash contains by default, the custom
 field names of my company's OCS instance. You should redefine it in
-your script if you intend to use this method. (The source be with you,
-Luke!)
+your script if you intend to use this method. (May the source be with
+you, Luke!)
+
+=head2 Constants
+
+This module defines some constants to make the calling of methods
+B<get_computers_V1> and B<computer_iterator> easier and more readable.
+
+These are for their CHECKSUM parameter.
+
+=over 4
+
+=item HARDWARE            => 0x00001
+
+=item BIOS                => 0x00002
+
+=item MEMORY_SLOTS        => 0x00004
+
+=item SYSTEM_SLOTS        => 0x00008
+
+=item REGISTRY            => 0x00010
+
+=item SYSTEM_CONTROLLERS  => 0x00020
+
+=item MONITORS            => 0x00040
+
+=item SYSTEM_PORTS        => 0x00080
+
+=item STORAGE_PERIPHERALS => 0x00100
+
+=item LOGICAL_DRIVES      => 0x00200
+
+=item INPUT_DEVICES       => 0x00400
+
+=item MODEMS              => 0x00800
+
+=item NETWORK_ADAPTERS    => 0x01000
+
+=item PRINTERS            => 0x02000
+
+=item SOUND_ADAPTERS      => 0x04000
+
+=item VIDEO_ADAPTERS      => 0x08000
+
+=item SOFTWARE            => 0x10000
+
+=back
+
+And these are for their WANTED parameter.
+
+=over 4
+
+=item ACOUNTINFO          => 0x00001
+
+=item DICO_SOFT           => 0x00002
+
+=back
 
 =head1 AUTHOR
 

@@ -28,11 +28,12 @@ my %WriteMakefileArgs = (
     "URI" => 0,
     "XML::Entities" => 0,
     "XML::Simple" => 0,
+    "constant" => 0,
     "strict" => 0,
     "utf8" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.003",
+  "VERSION" => "0.004",
   "test" => {
     "TESTS" => "t/*.t"
   }
