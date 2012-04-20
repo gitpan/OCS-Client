@@ -4,7 +4,7 @@ use warnings;
 
 package OCS::Client;
 {
-  $OCS::Client::VERSION = '0.004';
+  $OCS::Client::VERSION = '0.005';
 }
 # ABSTRACT: A simple interface to OCS's SOAP API
 
@@ -128,6 +128,7 @@ sub prune {
     if (exists $computer->{DRIVES}) {
 	foreach my $drive (@{$computer->{DRIVES}}) {
 	    $drive->{ORDER} = (ref $drive->{VOLUMN} ? '' : $drive->{VOLUMN}) . (ref $drive->{LETTER} ? '' : $drive->{LETTER});
+	    $drive->{ORDER} =~ s@:/$@:@;
 	    delete @{$drive}{qw/CREATEDATE FREE LETTER NUMFILES VOLUMN/};
 	}
 	$computer->{DRIVES} = [sort {$a->{ORDER} cmp $b->{ORDER}} grep {$_->{TYPE} !~ /removable/i} @{$computer->{DRIVES}}];
@@ -144,12 +145,18 @@ sub prune {
 	}
     }
 
-    $computer->{PRINTERS} = [sort {$a->{NAME} cmp $b->{NAME}} @{$computer->{PRINTERS}}]
-	if exists $computer->{PRINTERS};
+    if (exists $computer->{PRINTERS}) {
+	$computer->{PRINTERS} = [sort {$a->{NAME} cmp $b->{NAME}} @{$computer->{PRINTERS}}];
+    }
 
     # Of the software we only keep the name and the version
-    $computer->{SOFTWARES} = {map {($_->{NAME} => $_->{VERSION})} @{$computer->{SOFTWARES}}}
-	if exists $computer->{SOFTWARES};
+    if (exists $computer->{SOFTWARES}) {
+	$computer->{SOFTWARES} = {map {($_->{NAME} => $_->{VERSION})} @{$computer->{SOFTWARES}}};
+    }
+
+    if (exists $computer->{STORAGES}) {
+	$computer->{STORAGES} = [grep {$_->{TYPE} !~ /removable/i} @{$computer->{STORAGES}}];
+    }
 
     if (exists $computer->{VIDEOS}) {
 	foreach my $video (@{$computer->{VIDEOS}}) {
@@ -197,7 +204,7 @@ OCS::Client - A simple interface to OCS's SOAP API
 
 =head1 VERSION
 
-version 0.004
+version 0.005
 
 =head1 SYNOPSIS
 
