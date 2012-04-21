@@ -4,7 +4,7 @@ use warnings;
 
 package OCS::Client;
 {
-  $OCS::Client::VERSION = '0.006';
+  $OCS::Client::VERSION = '0.007';
 }
 # ABSTRACT: A simple interface to OCS's SOAP API
 
@@ -204,7 +204,7 @@ OCS::Client - A simple interface to OCS's SOAP API
 
 =head1 VERSION
 
-version 0.006
+version 0.007
 
 =head1 SYNOPSIS
 
