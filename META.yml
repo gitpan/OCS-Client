@@ -27,4 +27,4 @@ requires:
 resources:
   bugtracker: https://github.com/gnustavo/OCS-Client/issues
   repository: git://github.com/gnustavo/OCS-Client.git
-version: 0.005
+version: 0.006
