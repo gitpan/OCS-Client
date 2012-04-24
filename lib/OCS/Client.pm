@@ -4,7 +4,7 @@ use warnings;
 
 package OCS::Client;
 {
-  $OCS::Client::VERSION = '0.008';
+  $OCS::Client::VERSION = '0.009';
 }
 # ABSTRACT: A simple interface to OCS's SOAP API
 
@@ -65,7 +65,7 @@ sub get_computers_V1 {
     shift @computers;
     pop   @computers;
 
-    return map {XMLin($_, ForceArray => [qw/DRIVES HARDWARE NETWORKS PRINTERS SOFTWARES STORAGES VIDEOS/])} @computers;
+    return map {XMLin($_, ForceArray => [qw/DRIVES NETWORKS PRINTERS SOFTWARES STORAGES VIDEOS/])} @computers;
 }
 
 
@@ -204,7 +204,7 @@ OCS::Client - A simple interface to OCS's SOAP API
 
 =head1 VERSION
 
-version 0.008
+version 0.009
 
 =head1 SYNOPSIS
 
