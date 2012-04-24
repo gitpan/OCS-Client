@@ -26,5 +26,6 @@ requires:
   warnings: 0
 resources:
   bugtracker: https://github.com/gnustavo/OCS-Client/issues
+  homepage: http://search.cpan.org/dist/OCS-Client/
   repository: git://github.com/gnustavo/OCS-Client.git
-version: 0.007
+version: 0.008
