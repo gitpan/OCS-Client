@@ -1,13 +1,12 @@
+## no critic (Modules::RequireExplicitPackage)
+
 use utf8;
 use strict;
 use warnings;
 
 package OCS::Client;
-{
-  $OCS::Client::VERSION = '0.009';
-}
 # ABSTRACT: A simple interface to OCS's SOAP API
-
+$OCS::Client::VERSION = '0.010';
 use Carp;
 use URI;
 use SOAP::Lite;
@@ -38,14 +37,14 @@ sub new {
 
 
 sub get_computers_V1 {
-    my $self = shift;
+    my ($self, @args) = @_;
     my %request = (
 	engine     => 'FIRST',
 	asking_for => 'INVENTORY',
 	checksum   => 0x01FFFF,
 	wanted     => 0x000003,
 	offset     => 0,
-	@_,
+	@args,
     );
 
     my $request = "<REQUEST>\n";
@@ -104,6 +103,9 @@ our %fields = (
     20 => 'UA Username',
     21 => 'Office',
     22 => 'Office Tag',
+    23 => 'PA',
+    26 => 'Diretoria',
+    27 => 'Nota Fiscal',
 );
 
 
@@ -114,7 +116,11 @@ sub prune {
 	my %myinfo;
 	foreach my $info (grep {exists $_->{content}} @$accountinfo) {
 	    if ($info->{Name} =~ /^fields_(\d+)$/) {
-		$myinfo{$fields{$1}} = $info->{content};
+                if (exists $fields{$1}) {
+                    $myinfo{$fields{$1}} = $info->{content};
+                } else {
+                    warn "Skipping unknown ACCOUNTINFO field id: $1";
+                }
 	    } else {
 		$myinfo{$info->{Name}} = $info->{content};
 	    }
@@ -168,7 +174,7 @@ sub prune {
 }
 
 
-use constant {
+use constant {                  ## no critic (ValuesAndExpressions::ProhibitConstantPragma)
     # CHECKSUM constants
     'HARDWARE'            => 0x00001,
     'BIOS'                => 0x00002,
@@ -196,7 +202,10 @@ use constant {
 1; # End of OCS::Client
 
 __END__
+
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -204,7 +213,7 @@ OCS::Client - A simple interface to OCS's SOAP API
 
 =head1 VERSION
 
-version 0.009
+version 0.010
 
 =head1 SYNOPSIS
 
@@ -336,4 +345,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
