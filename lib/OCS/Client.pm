@@ -1,12 +1,14 @@
 ## no critic (Modules::RequireExplicitPackage)
 
+package OCS::Client;
+{
+  $OCS::Client::VERSION = '0.011';
+}
+# ABSTRACT: simple interface to OCS's SOAP API
+
 use utf8;
 use strict;
 use warnings;
-
-package OCS::Client;
-# ABSTRACT: A simple interface to OCS's SOAP API
-$OCS::Client::VERSION = '0.010';
 use Carp;
 use URI;
 use SOAP::Lite;
@@ -55,7 +57,7 @@ sub get_computers_V1 {
 
     my $som = $self->{soap}->get_computers_V1($request);
 
-    die "ERROR: ", XML::Entities::decode('all', $som->fault->{faultstring})
+    croak "ERROR: ", XML::Entities::decode('all', $som->fault->{faultstring})
 	if $som->fault;
 
     my @computers = $som->paramsall;
@@ -83,7 +85,7 @@ sub computer_iterator {
 
 # This hash is used to map OCS custom field ids (in the form
 # "fields_N") into their names.
-our %fields = (
+my %fields = (
     3 => 'UA',
     4 => 'Sala',
     5 => 'Nome do Usuário',
@@ -106,6 +108,7 @@ our %fields = (
     23 => 'PA',
     26 => 'Diretoria',
     27 => 'Nota Fiscal',
+    28 => 'HW Guidelines',
 );
 
 
@@ -119,7 +122,7 @@ sub prune {
                 if (exists $fields{$1}) {
                     $myinfo{$fields{$1}} = $info->{content};
                 } else {
-                    warn "Skipping unknown ACCOUNTINFO field id: $1";
+                    carp "Skipping unknown ACCOUNTINFO field id: $1";
                 }
 	    } else {
 		$myinfo{$info->{Name}} = $info->{content};
@@ -209,11 +212,11 @@ __END__
 
 =head1 NAME
 
-OCS::Client - A simple interface to OCS's SOAP API
+OCS::Client - simple interface to OCS's SOAP API
 
 =head1 VERSION
 
-version 0.010
+version 0.011
 
 =head1 SYNOPSIS
 
@@ -332,6 +335,10 @@ And these are for their WANTED parameter.
 
     'ACOUNTINFO'          => 0x00001,
     'DICO_SOFT'           => 0x00002,
+
+=head1 REPOSITORY
+
+L<https://github.com/gnustavo/OCS-Client>
 
 =head1 AUTHOR
 
